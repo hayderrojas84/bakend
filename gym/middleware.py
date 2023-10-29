@@ -32,8 +32,6 @@ class AuthMiddleware:
             # Busca el usuario en la base de datos por el nombre de usuario
             user = Users.objects.get(username=username)
 
-            print(user)
-
             # Si el usuario es válido, establece el usuario en la solicitud
             request.user = user
         except (jwt.InvalidTokenError, Users.DoesNotExist) as e:
