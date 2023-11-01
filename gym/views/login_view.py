@@ -4,7 +4,7 @@ import json
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.contrib.auth.hashers import check_password
+from django.forms.models import model_to_dict
 from datetime import datetime, timedelta
 from gym.models import Users
 
@@ -36,7 +36,11 @@ def login(request):
 
             secret_key = 'your_secret_key'  # Reemplaza con tu propia clave secreta
             token = jwt.encode(payload, secret_key, algorithm='HS256')
-            return JsonResponse({'token': token})
+            user_dict = model_to_dict(localUser)
+            return JsonResponse({
+                'token': token,
+                'user': user_dict
+            })
         else:
             return JsonResponse({'error': 'Credenciales inválidas'}, status=401)
     else:

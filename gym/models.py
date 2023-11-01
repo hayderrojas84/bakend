@@ -2,25 +2,34 @@ from django.db import models
 from power_house.models import BaseModel
 
 class Users(BaseModel):
-    class GENDERS(models.TextChoices):
-        HOMBRE = '1', ('Hombre')
-        MUJER = '2', ('Mujer')
-
-    username = models.CharField(max_length=50)
+    username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=255, null=True, blank=True)
-    identification = models.CharField(max_length=25)
+
+    class Meta:
+        db_table = 'Users'
+
+class People(BaseModel):
+
+    class GENDERS(models.TextChoices):
+            HOMBRE = '1', ('Hombre')
+            MUJER = '2', ('Mujer')
+
+    userId = models.ForeignKey(Users, on_delete=models.CASCADE, null=False, blank=False, db_column='userId')
+    identification = models.CharField(max_length=25, unique=True)
     names = models.CharField(max_length=50)
     lastnames = models.CharField(max_length=50)
-    birthdate = models.DateField()
-    email = models.CharField(max_length=50, null=True)
+    birthdate = models.DateField(null=True, blank=True)
+    email = models.CharField(max_length=50, null=True, blank=True, unique=True)
     address = models.CharField(max_length=50, null=True)
+    mobile = models.CharField(max_length=11, null=True)
     weight = models.IntegerField()
     height = models.IntegerField()
     bloodType = models.CharField(max_length=5, null=True)
     gender = models.CharField(max_length=15 , choices=GENDERS.choices)
-
+    image = models.BinaryField(null=True, blank=True)
+    
     class Meta:
-        db_table = 'Users'
+        db_table = 'People'
 
 class Roles(BaseModel):
     name = models.CharField(max_length=25)
@@ -49,6 +58,7 @@ class Machines(BaseModel):
     description = models.TextField(null=True)
     muscleGroup = models.CharField(max_length=30)
     quantity = models.IntegerField(default=1)
+    image = models.BinaryField(null=True, blank=True)
 
     class Meta:
         db_table = 'Machines'

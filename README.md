@@ -14,6 +14,7 @@ Asegúrate de que tienes los siguientes paquetes de Python y sus versiones corre
 - Django: 4.2.6
 - django-cors-headers: 4.3.0
 - mysqlclient: 2.2.0
+- Pillow: 10.1.0
 - pip: 23.3.1
 - PyJWT: 2.8.0
 - setuptools: 58.1.0

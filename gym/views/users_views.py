@@ -1,15 +1,21 @@
 import hashlib
 import json
+import base64
 
 from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
-from gym.models import Users, Roles, UserRoles
+from django.db import IntegrityError
+from PIL import Image, UnidentifiedImageError
+from io import BytesIO
+
+from gym.models import Users, People, Roles, UserRoles
+
+
 
 from gym.decorators import protected_endpoint
 
 # Vista para listar todos los usuarios (operación de lectura)
-@protected_endpoint
 def user_list(request):
     if request.method == 'GET':
           users = Users.objects.all().values()  # Obtener los valores de la consulta en forma de diccionarios
@@ -18,7 +24,26 @@ def user_list(request):
               # Excluir el campo 'password' si existe en el diccionario del usuario
               if 'password' in user:
                   del user['password']
+
+              del user['created']
+              del user['updated']
+
+              try:
+                people = People.objects.get(userId=user['id'])
+                if people:
+                  people_data = model_to_dict(people)
+
+                  image_data = None
+                  if people.image:
+                      image_data = base64.b64encode(people.image).decode('utf-8')
+
+                  people_data['image'] = f"data:image/jpeg;base64,{image_data}" if image_data else None
+                  user['people'] = people_data
+              except People.DoesNotExist:
+                  user['people']: {}
+              
               data.append(user)
+              
           return JsonResponse(data, safe=False)
     return JsonResponse({'message': 'Método no permitido'}, status=405)
 
@@ -26,30 +51,23 @@ def user_list(request):
 @csrf_exempt
 def create_user(request):
   if request.method == 'POST':
-    # Obtener el cuerpo de la solicitud en forma de cadena JSON
-    request_body = request.body.decode('utf-8')
-
+    
     try:
-      # Analizar el JSON en un diccionario
-      user_data = json.loads(request_body)
+      data = {
+          'user': json.loads(request.POST['user']),
+          'people': json.loads(request.POST['people'])
+      }
 
+      user = data.get('user')
+      people = data.get('people')
+        
       # Crear un nuevo usuario a partir de los datos
       new_user = Users(
-        username=user_data['username'],
-        identification=user_data['identification'],
-        names=user_data['names'],
-        lastnames=user_data['lastnames'],
-        birthdate=user_data['birthdate'],
-        email=user_data['email'],
-        address=user_data['address'],
-        weight=user_data['weight'],
-        height=user_data['height'],
-        bloodType=user_data['bloodType'],
-        gender=user_data['gender']
+        username = user['username'] if user['username'] is not None else people['identification']
       )
 
-      if 'password' in user_data:
-        password = user_data['password']
+      if user['password'] is not None:
+        password = user['password']
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         new_user.password = hashed_password
         search = 'admin'
@@ -57,26 +75,86 @@ def create_user(request):
         search = 'cliente'
 
       new_user.save()
+
+      print('created', model_to_dict(new_user))
+
+      try:
+          local_people = People.objects.get(identification=people['identification'])
+          print ('people exist')
+          if (local_people and local_people.userId is not None):
+              if (new_user.id is not None):
+                new_user.delete()
+              return JsonResponse({'message': 'Ya existe un usuario asociado con esta persona...'}, status=400)
+
+      except People.DoesNotExist:
+          print('people ddoes not exist')
+          new_people = People(
+            identification=people['identification'],
+            names=people['names'],
+            lastnames=people['lastnames'],
+            birthdate=people['birthdate'],
+            email=people['email'],
+            address=people['address'],
+            mobile=people['mobile'],
+            weight=people['weight'],
+            height=people['height'],
+            bloodType=people['bloodType'],
+            gender=people['gender']
+          )
+
+          new_people.userId = new_user
+
+          image = request.FILES.get('image')
+                
+          if image:
+              img = Image.open(image)
+              img_bytes_io = BytesIO()
+              img = img.convert('RGB')
+              img.save(img_bytes_io, format='JPEG')
+              new_people.image = img_bytes_io.getvalue()
+          new_people.save()
+
       role, created = Roles.objects.get_or_create(name=search)
       UserRoles.objects.get_or_create(userId=new_user, roleId=role)    
 
-      return JsonResponse({'message': 'Usuario creado'}, status=201)
+      return JsonResponse({'message': 'Usuario creado', 'id': new_user.id}, status=201)
     except json.JSONDecodeError:
       return JsonResponse({'message': 'Error al analizar los datos JSON'}, status=400)
     except KeyError:
       return JsonResponse({'message': 'Faltan campos requeridos en los datos JSON'}, status=400)
-
+    except IntegrityError:
+      return JsonResponse({'message': 'Error con la integridad de los datos'}, status=400)
+    except UnidentifiedImageError:
+      return JsonResponse({'message': 'Error al procesar la imagen'}, status=400)
+    except Exception as e:
+      print(e)
+      if new_user.id is not None:
+          new_user.delete()
+      return JsonResponse({'message': 'Error inesperado al crear el usuario'}, status=500)
   return JsonResponse({'message': 'Método no permitido'}, status=405)
 
 # Vista para obtener detalles de un usuario (operación de lectura)
 def user_detail(request, user_id):
   try:
     user = Users.objects.get(pk=user_id)
+    people = People.objects.get(userId=user.id)
   except Users.DoesNotExist:
     return JsonResponse({'message': 'Usuario no encontrado'}, status=404)
+  except People.DoesNotExist:
+    return JsonResponse({'message': 'Persona no encontrada'}, status=404)
 
   if request.method == 'GET':
     data = model_to_dict(user)
+    del data['password']
+
+    image_data = None
+    if people.image:
+      image_data = base64.b64encode(people.image).decode('utf-8')
+
+    people_data = model_to_dict(people)
+    people_data['image'] = f"data:image/jpeg;base64,{image_data}" if image_data else None
+
+    data['people'] = people_data
     return JsonResponse(data)
   return JsonResponse({'message': 'Método no permitido'}, status=405)
 
@@ -88,13 +166,15 @@ def update_user(request, user_id):
   except Users.DoesNotExist:
     return JsonResponse({'message': 'Usuario no encontrado'}, status=404)
 
-  if request.method == 'PUT':
+  if request.method == 'POST':
     # Obtener el cuerpo de la solicitud en forma de cadena JSON
-    request_body = request.body.decode('utf-8')
-
     try:
-        # Analizar el JSON en un diccionario
-        user_data = json.loads(request_body)
+        data = {
+           'user': json.loads(request.POST['user']),
+           'people': json.loads(request.POST['people'])
+        }
+        
+        user_data = data['user']
 
         # Obtener el usuario que deseas actualizar
         user = Users.objects.get(pk=user_id)
@@ -102,26 +182,6 @@ def update_user(request, user_id):
         # Actualizar los campos del usuario con los datos proporcionados
         if 'username' in user_data:
             user.username = user_data['username']
-        if 'identification' in user_data:
-            user.identification = user_data['identification']
-        if 'names' in user_data:
-            user.names = user_data['names']
-        if 'lastnames' in user_data:
-            user.lastnames = user_data['lastnames']
-        if 'birthdate' in user_data:
-            user.birthdate = user_data['birthdate']
-        if 'email' in user_data:
-            user.email = user_data['email']
-        if 'address' in user_data:
-            user.address = user_data['address']
-        if 'weight' in user_data:
-            user.weight = user_data['weight']
-        if 'height' in user_data:
-            user.height = user_data['height']
-        if 'bloodType' in user_data:
-            user.bloodType = user_data['bloodType']
-        if 'gender' in user_data:
-            user.gender = user_data['gender']
         
         if 'password' in user_data:
             password = user_data['password']
@@ -129,6 +189,43 @@ def update_user(request, user_id):
             user.password = hashed_password
 
         user.save()
+
+        people_data = data['people']
+        people = People.objects.get(identification=people_data['identification'])
+
+        if 'names' in people_data:
+            people.names = people_data['names']
+        if 'lastnames' in people_data:
+            people.lastnames = people_data['lastnames']
+        if 'birthdate' in people_data:
+            people.birthdate = people_data['birthdate']
+        if 'email' in people_data:
+            people.email = people_data['email']
+        if 'address' in people_data:
+            people.address = people_data['address']
+        if 'mobile' in people_data:
+            people.mobile = people_data['mobile']
+        if 'weight' in people_data:
+            people.weight = people_data['weight']
+        if 'height' in people_data:
+            people.height = people_data['height']
+        if 'bloodType' in people_data:
+            people.bloodType = people_data['bloodType']
+        if 'gender' in people_data:
+            people.gender = people_data['gender']
+
+        image = request.FILES.get('image')
+                
+        if image:
+            img = Image.open(image)
+            img_bytes_io = BytesIO()
+            img = img.convert('RGB')
+            img.save(img_bytes_io, format='JPEG')
+            people.image = img_bytes_io.getvalue()
+
+        print('people',model_to_dict(people))
+
+        people.save()
 
         return JsonResponse({'message': 'Usuario actualizado'}, status=200)
     except json.JSONDecodeError:
@@ -138,9 +235,10 @@ def update_user(request, user_id):
     except KeyError:
         return JsonResponse({'message': 'Faltan campos requeridos en los datos JSON'}, status=400)
     
-  return JsonResponse({'message': 'Método no permitido'}, status=405)
+  return JsonResponse({'message': 'Método no permitido, prueba con un POST'}, status=405)
 
 # Vista para eliminar un usuario (operación de eliminación)
+@csrf_exempt
 def delete_user(request, user_id):
   try:
     user = Users.objects.get(pk=user_id)
