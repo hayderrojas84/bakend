@@ -1,5 +1,5 @@
 from django.urls import path
-from gym.views import users_views, login_view, roles_views, machines_views, exercises_views, routines_views, routineSchedules_views
+from gym.views import users_views, people_views, login_view, roles_views, machines_views, exercises_views, routines_views, routineSchedules_views
 
 
 urlpatterns = [
@@ -8,6 +8,9 @@ urlpatterns = [
     path('users/<int:user_id>/', users_views.user_detail, name='users.getById'),
     path('users/<int:user_id>/update/', users_views.update_user, name='users.update'),
     path('users/<int:user_id>/delete/', users_views.delete_user, name='users.delete'),
+
+    path('people/<str:identification>/', people_views.people_detail_identification, name='people.getByIdentification'),
+
 
     path('auth/login', login_view.login, name='login'),
 

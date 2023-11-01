@@ -65,6 +65,13 @@ A continuación se describen los endpoints disponibles en este proyecto:
 - **Método:** DELETE
 - **Descripción:** Elimina un usuario por su ID.
 
+## Clientes
+
+### Obtener Cliente Por Identificación
+- **Ruta:** `/people/<str:identification>/`
+- **Método:** GET
+- **Descripción:** Obtiene un cliente por identificación.
+
 ## Roles
 
 ### Listar Roles
