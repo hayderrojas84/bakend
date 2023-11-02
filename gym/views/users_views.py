@@ -76,18 +76,14 @@ def create_user(request):
 
       new_user.save()
 
-      print('created', model_to_dict(new_user))
-
       try:
           local_people = People.objects.get(identification=people['identification'])
-          print ('people exist')
           if (local_people and local_people.userId is not None):
               if (new_user.id is not None):
                 new_user.delete()
               return JsonResponse({'message': 'Ya existe un usuario asociado con esta persona...'}, status=400)
 
       except People.DoesNotExist:
-          print('people ddoes not exist')
           new_people = People(
             identification=people['identification'],
             names=people['names'],
@@ -127,7 +123,6 @@ def create_user(request):
     except UnidentifiedImageError:
       return JsonResponse({'message': 'Error al procesar la imagen'}, status=400)
     except Exception as e:
-      print(e)
       if new_user.id is not None:
           new_user.delete()
       return JsonResponse({'message': 'Error inesperado al crear el usuario'}, status=500)
@@ -222,8 +217,6 @@ def update_user(request, user_id):
             img = img.convert('RGB')
             img.save(img_bytes_io, format='JPEG')
             people.image = img_bytes_io.getvalue()
-
-        print('people',model_to_dict(people))
 
         people.save()
 

@@ -43,10 +43,8 @@ def login(request):
             people_dict = model_to_dict(localPeople)
             
             
-            
             image_data = None
             if localPeople.image:
-              print('image')
               image_data = base64.b64encode(localPeople.image).decode('utf-8')
               people_dict['image'] = f"data:image/jpeg;base64,{image_data}" if image_data else None
             

@@ -49,6 +49,7 @@ class Exercises(BaseModel):
     name = models.CharField(max_length=25)
     muscleGroup = models.CharField(max_length=50)
     description = models.TextField(null=True)
+    image = models.BinaryField(null=True, blank=True)
 
     class Meta:
         db_table = 'Exercises'
@@ -64,7 +65,7 @@ class Machines(BaseModel):
         db_table = 'Machines'
 
 class ExerciseMachines(BaseModel):
-    exerciceId = models.ForeignKey(Exercises, on_delete=models.CASCADE, null=False, blank=False, db_column='exerciceId')
+    exerciseId = models.ForeignKey(Exercises, on_delete=models.CASCADE, null=False, blank=False, db_column='exerciceId')
     machineId = models.ForeignKey(Machines, on_delete=models.CASCADE, null=False, blank=False, db_column='machineId')
 
     class Meta:
