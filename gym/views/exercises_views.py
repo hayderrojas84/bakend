@@ -33,7 +33,7 @@ def create_exercise(request):
 
             new_exercise.save()
 
-            return JsonResponse({'message': 'Ejercicio creado'}, status=201)
+            return JsonResponse({'message': 'Ejercicio creado', 'id': new_exercise.id}, status=201)
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Error al analizar los datos JSON'}, status=400)
         except KeyError:
@@ -90,6 +90,7 @@ def update_exercise(request, exercise_id):
     return JsonResponse({'message': 'Método no permitido'}, status=405)
 
 # Vista para eliminar un ejercicio (operación de eliminación)
+@csrf_exempt
 def delete_exercise(request, exercise_id):
     try:
         exercise = Exercises.objects.get(pk=exercise_id)

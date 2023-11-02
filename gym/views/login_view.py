@@ -43,6 +43,7 @@ def login(request):
             people_dict = model_to_dict(localPeople)
             
             
+            
             image_data = None
             if localPeople.image:
               print('image')

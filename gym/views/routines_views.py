@@ -34,7 +34,7 @@ def create_routine(request):
 
             new_routine.save()
 
-            return JsonResponse({'message': 'Rutina creada'}, status=201)
+            return JsonResponse({'message': 'Rutina creada', 'id': new_routine.id}, status=201)
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Error al analizar los datos JSON'}, status=400)
         except KeyError:
@@ -93,6 +93,7 @@ def update_routine(request, routine_id):
     return JsonResponse({'message': 'Método no permitido'}, status=405)
 
 # Vista para eliminar una rutina (operación de eliminación)
+@csrf_exempt
 def delete_routine(request, routine_id):
     try:
         routine = Routines.objects.get(pk=routine_id)
