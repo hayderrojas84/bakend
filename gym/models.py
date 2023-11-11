@@ -76,6 +76,7 @@ class Routines(BaseModel):
     description = models.TextField(null=True)
     difficulty = models.CharField(max_length=25, default='Principiante')
     goal = models.CharField(max_length=25)
+    muscleGroup = models.CharField(max_length=25)
 
     class Meta:
         db_table = 'Routines'
@@ -90,7 +91,7 @@ class RoutineSchedules(BaseModel):
         SATURDAY = '6', ('Sábado')
         SUNDAY = '7', ('Domingo')
 
-    userId = models.ForeignKey(Users, on_delete=models.CASCADE, null=False, blank=False, db_column='userId')
+    peopleId = models.ForeignKey(People, on_delete=models.CASCADE, null=False, blank=False, db_column='peopleId')
     routineId = models.ForeignKey(Routines, on_delete=models.CASCADE, null=False, blank=False, db_column='routineId')
     dayOfWeek = models.CharField(max_length=15, choices=DAYS_OF_WEEK.choices, null=False, blank=False)
 
@@ -103,16 +104,10 @@ class RoutinesExercises(BaseModel):
 
     class Meta:
         db_table = 'RoutinesExercises'
-
-class Memberships(BaseModel):
-    userId = models.ForeignKey(Users, on_delete=models.CASCADE, null=False, blank=False, db_column='userId')
-    class Meta:
-        db_table = 'Memberships'
-
 class Transactions(BaseModel):
-    membershipId = models.ForeignKey(Memberships, on_delete=models.CASCADE, null=False, blank=False, db_column='membershipId')
-    startDate = models.DateTimeField()
-    endDate = models.DateTimeField()
+    peopleId = models.ForeignKey(People, on_delete=models.CASCADE, null=False, blank=False, db_column='peopleId')
+    startDate = models.DateField()
+    endDate = models.DateField()
     value = models.FloatField(null=True)
 
     class Meta:

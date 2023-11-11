@@ -1,5 +1,5 @@
 from django.urls import path
-from gym.views import users_views, people_views, login_view, roles_views, machines_views, exercises_views, routines_views, routineSchedules_views
+from gym.views import users_views, people_views, login_view, roles_views, machines_views, exercises_views, routines_views, routineSchedules_views, transactions_views
 
 
 urlpatterns = [
@@ -39,9 +39,15 @@ urlpatterns = [
     path('routines/<int:routine_id>/delete/', routines_views.delete_routine, name='routines.delete'),
 
     path('routineSchedules/', routineSchedules_views.routine_schedules_list, name='routineSchedules.list'),
+    path('routineSchedules/<int:people_id>/', routineSchedules_views.routine_schedules_by_people_id, name='routineSchedules.getByPeopleId'),
     path('routineSchedules/create/', routineSchedules_views.create_routine_schedule, name='routineSchedules.create'),
     path('routineSchedules/<int:routine_id>/', routineSchedules_views.routine_schedule_detail, name='routineSchedules.getById'),
     path('routineSchedules/<int:routine_id>/update/', routineSchedules_views.update_routine_schedule, name='routineSchedules.update'),
     path('routineSchedules/<int:routine_id>/delete/', routineSchedules_views.delete_routine_schedule, name='routineSchedules.delete'),
+    
+    path('transactions/people/<int:people_id>/', transactions_views.getTransactionsByPeopleId, name='transactions.getByPeopleId'),
+    path('transactions/create/', transactions_views.create_transaction, name='transactions.create'),
+    path('transactions/<int:transaction_id>/', transactions_views.transaction_detail, name='transactions.getById')
+
 ]
 

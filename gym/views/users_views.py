@@ -2,6 +2,7 @@ import hashlib
 import json
 import base64
 
+from datetime import datetime, date, timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
@@ -9,7 +10,7 @@ from django.db import IntegrityError
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 
-from gym.models import Users, People, Roles, UserRoles
+from gym.models import Users, People, Roles, UserRoles, Transactions
 
 
 
@@ -19,6 +20,8 @@ from gym.decorators import protected_endpoint
 def user_list(request):
     if request.method == 'GET':
           users = Users.objects.all().values()  # Obtener los valores de la consulta en forma de diccionarios
+          transactions = Transactions.objects.all().values()
+          
           data = []
           for user in users:
               # Excluir el campo 'password' si existe en el diccionario del usuario
@@ -39,6 +42,17 @@ def user_list(request):
 
                   people_data['image'] = f"data:image/jpeg;base64,{image_data}" if image_data else None
                   user['people'] = people_data
+                  
+                  peopleTransactions = transactions.filter(peopleId=people.id)
+                  
+                  user['paymentStatus'] = 'Pendiente'
+                  
+                  if len(peopleTransactions):
+                    currentDate = datetime.now(timezone.utc).date()
+                    for transaction in peopleTransactions:
+                      if transaction['endDate'] >= currentDate:
+                        user['paymentStatus'] = 'Pagado'
+                                    
               except People.DoesNotExist:
                   user['people']: {}
               
@@ -145,6 +159,16 @@ def user_detail(request, user_id):
     image_data = None
     if people.image:
       image_data = base64.b64encode(people.image).decode('utf-8')
+    
+    peopleTransactions = Transactions.objects.filter(peopleId=people.id)
+                  
+    data['paymentStatus'] = 'Pendiente'
+    
+    if len(peopleTransactions):
+      currentDate = datetime.now(timezone.utc).date()
+      for transaction in peopleTransactions:
+        if transaction['endDate'] >= currentDate:
+          data['paymentStatus'] = 'Pagado'
 
     people_data = model_to_dict(people)
     people_data['image'] = f"data:image/jpeg;base64,{image_data}" if image_data else None

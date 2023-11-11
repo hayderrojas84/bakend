@@ -1,13 +1,22 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
-from gym.models import RoutineSchedules, Users, Routines
+from gym.models import RoutineSchedules, People, Routines
 import json
 
 # Vista para listar todos los horarios de rutina (operación de lectura)
 def routine_schedules_list(request):
     if request.method == 'GET':
         schedules = RoutineSchedules.objects.all()
+        data = [model_to_dict(schedule) for schedule in schedules]
+        return JsonResponse(data, safe=False)
+  
+    return JsonResponse({'message': 'Método no permitido'}, status=405)
+  
+# Vista para listar todos los horarios de rutina (operación de lectura)
+def routine_schedules_by_people_id(request, people_id):
+    if request.method == 'GET':
+        schedules = RoutineSchedules.objects.filter(peopleId=people_id)
         data = [model_to_dict(schedule) for schedule in schedules]
         return JsonResponse(data, safe=False)
   
@@ -26,14 +35,14 @@ def create_routine_schedule(request):
 
             # Crear un nuevo horario de rutina a partir de los datos
             new_schedule = RoutineSchedules(
-                userId=Users.objects.get(pk=schedule_data['userId']),
+                peopleId=People.objects.get(pk=schedule_data['peopleId']),
                 routineId=Routines.objects.get(pk=schedule_data['routineId']),
                 dayOfWeek=schedule_data['dayOfWeek']
             )
 
             new_schedule.save()
 
-            return JsonResponse({'message': 'Horario de rutina creado'}, status=201)
+            return JsonResponse({'message': 'Horario de rutina creado', 'id': new_schedule.id}, status=201)
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Error al analizar los datos JSON'}, status=400)
         except KeyError:
