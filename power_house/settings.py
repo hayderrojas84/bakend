@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -141,3 +142,15 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
+
+STATIC_ROOT=os.path.join(BASE_DIR,'staticfiles')
+STATIC_TMP=os.path.join(BASE_DIR,'static')
+
+os.makedirs(STATIC_TMP, exist_ok=True)
+os.makedirs(STATIC_ROOT, exist_ok=True)
+
+STATICFILES_DIRS=(
+    os.path.join(BASE_DIR,'static'),
+)
+STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage'
+STATIC_URL = '/static/'
