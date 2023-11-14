@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
@@ -93,7 +93,6 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'power_house',
         'USER': 'root',
-        'PASSWORD': 'root',
         'HOST': '127.0.0.1',
         'PORT': '3306'
     }
