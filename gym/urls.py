@@ -1,53 +1,56 @@
 from django.urls import path
-from gym.views import users_views, people_views, login_view, roles_views, machines_views, exercises_views, routines_views, routineSchedules_views, transactions_views
-
+from gym.views.rest_framework import rf_exercises_views, rf_login_view, rf_machines_views, rf_people_views, rf_transactions_views, rf_routines_views, rf_routineSchedules_views, rf_users_views, rf_maintenances_views
 
 urlpatterns = [
-    path('users/', users_views.user_list, name='users.list'),
-    path('users/create/', users_views.create_user, name='users.create'),
-    path('users/<int:user_id>/', users_views.user_detail, name='users.getById'),
-    path('users/<int:user_id>/update/', users_views.update_user, name='users.update'),
-    path('users/<int:user_id>/delete/', users_views.delete_user, name='users.delete'),
+    path('users/', rf_users_views.UsersListView.as_view(), name='users.list'),
+    path('users/paginated/', rf_users_views.UsersListPaginatedView.as_view(), name='users.list.paginated'),
+    path('users/<int:pk>/', rf_users_views.UserDetailView.as_view(), name='users.detail'),
+    path('users/create/', rf_users_views.UserCreateView.as_view(), name='users.create'),
+    path('users/<int:pk>/update/', rf_users_views.UserUpdateView.as_view(), name='users.update'),
+    path('users/<int:pk>/delete/', rf_users_views.UserDeleteView.as_view(), name='users.delete'),
 
-    path('people/<str:identification>/', people_views.people_detail_identification, name='people.getByIdentification'),
+    path('people/', rf_people_views.PeopleListView.as_view(), name='people.list'),
+    path('people/<str:identification>/', rf_people_views.PeopleDetailByIdentificationView.as_view(), name='people.detailByIdentification'),
 
+    path('auth/login', rf_login_view.LoginView.as_view(), name='login'),
 
-    path('auth/login', login_view.login, name='login'),
-
-    path('roles/', roles_views.roles_list, name='roles.list'),
-    path('roles/create/', roles_views.create_role, name='roles.create'),
-    path('roles/<int:role_id>/', roles_views.role_detail, name='roles.getById'),
-    path('roles/<int:role_id>/update/', roles_views.update_role, name='roles.update'),
-    path('roles/<int:role_id>/delete/', roles_views.delete_role, name='roles.delete'),
-
-    path('machines/', machines_views.machine_list, name='machines.list'),
-    path('machines/create/', machines_views.create_machine, name='machines.create'),
-    path('machines/<int:machine_id>/', machines_views.machine_detail, name='machines.getById'),
-    path('machines/<int:machine_id>/update/', machines_views.update_machine, name='machines.update'),
-    path('machines/<int:machine_id>/delete/', machines_views.delete_machine, name='machines.delete'),
-
-    path('exercises/', exercises_views.exercise_list, name='exercises.list'),
-    path('exercises/create/', exercises_views.create_exercise, name='exercises.create'),
-    path('exercises/<int:exercise_id>/', exercises_views.exercise_detail, name='exercises.getById'),
-    path('exercises/<int:exercise_id>/update/', exercises_views.update_exercise, name='exercises.update'),
-    path('exercises/<int:exercise_id>/delete/', exercises_views.delete_exercise, name='exercises.delete'),
-
-    path('routines/', routines_views.routine_list, name='routines.list'),
-    path('routines/create/', routines_views.create_routine, name='routines.create'),
-    path('routines/<int:routine_id>/', routines_views.routine_detail, name='routines.getById'),
-    path('routines/<int:routine_id>/update/', routines_views.update_routine, name='routines.update'),
-    path('routines/<int:routine_id>/delete/', routines_views.delete_routine, name='routines.delete'),
-
-    path('routineSchedules/', routineSchedules_views.routine_schedules_list, name='routineSchedules.list'),
-    path('routineSchedules/<int:people_id>/', routineSchedules_views.routine_schedules_by_people_id, name='routineSchedules.getByPeopleId'),
-    path('routineSchedules/create/', routineSchedules_views.create_routine_schedule, name='routineSchedules.create'),
-    path('routineSchedules/<int:routine_id>/', routineSchedules_views.routine_schedule_detail, name='routineSchedules.getById'),
-    path('routineSchedules/<int:routine_id>/update/', routineSchedules_views.update_routine_schedule, name='routineSchedules.update'),
-    path('routineSchedules/<int:routine_id>/delete/', routineSchedules_views.delete_routine_schedule, name='routineSchedules.delete'),
+    path('machines/', rf_machines_views.MachinesListView.as_view(), name='machines.list'),
+    path('machines/paginated/', rf_machines_views.MachinesListPaginatedView.as_view(), name='machines.list.paginated'),
+    path('machines/<int:pk>/', rf_machines_views.MachineDetailView.as_view(), name='machines.detail'),
+    path('machines/create/', rf_machines_views.MachineCreateView.as_view(), name='machines.create'),
+    path('machines/<int:pk>/update/', rf_machines_views.MachineUpdateView.as_view(), name='machines.update'),
+    path('machines/<int:pk>/delete/', rf_machines_views.MachineDeleteView.as_view(), name='machines.delete'),
     
-    path('transactions/people/<int:people_id>/', transactions_views.getTransactionsByPeopleId, name='transactions.getByPeopleId'),
-    path('transactions/create/', transactions_views.create_transaction, name='transactions.create'),
-    path('transactions/<int:transaction_id>/', transactions_views.transaction_detail, name='transactions.getById')
+    path('maintenances/', rf_maintenances_views.MaintenancesListView.as_view(), name='maintenances.list'),
+    path('maintenances/paginated/', rf_maintenances_views.MaintenancesListPaginatedView.as_view(), name='maintenances.list.paginated'),
+    path('maintenances/<int:pk>/', rf_maintenances_views.MaintenanceDetailView.as_view(), name='maintenances.detail'),
+    path('maintenances/create/', rf_maintenances_views.MaintenanceCreateView.as_view(), name='maintenances.create'),
 
+    path('exercises/', rf_exercises_views.ExerciseListView.as_view(), name='exercises.list'),
+    path('exercises/paginated/', rf_exercises_views.ExerciseListPaginatedView.as_view(), name='exercises.list.paginated'),
+    path('exercises/<int:pk>/', rf_exercises_views.ExerciseDetailView.as_view(), name='exercises.detail'),
+    path('exercises/create/', rf_exercises_views.ExerciseCreateView.as_view(), name='exercises.create'),
+    path('exercises/<int:pk>/update/', rf_exercises_views.ExerciseUpdateView.as_view(), name='exercises.update'),
+    path('exercises/<int:pk>/delete/', rf_exercises_views.ExerciseDeleteView.as_view(), name='exercises.delete'),
+
+    path('routines/', rf_routines_views.RoutinesListView.as_view(), name='routines.list'),
+    path('routines/paginated/', rf_routines_views.RoutineListPaginatedView.as_view(), name='routines.list.paginated'),
+    path('routines/<int:pk>/', rf_routines_views.RoutineDetailView.as_view(), name='routines.detail'),
+    path('routines/create/', rf_routines_views.RoutineCreateView.as_view(), name='routines.create'),
+    path('routines/<int:pk>/update/', rf_routines_views.RoutineUpdateView.as_view(), name='routines.update'),
+    path('routines/<int:pk>/delete/', rf_routines_views.DeleteRoutineView.as_view(), name='routines.delete'),
+
+    path('routineSchedules/', rf_routineSchedules_views.RoutineSchedulesListView.as_view(), name='routineSchedules.list'),
+    path('routineSchedules/people/<int:people_id>/', rf_routineSchedules_views.RoutineSchedulesByPeopleIdView.as_view(), name='routineSchedules.list.byPeopleId'),
+    path('routineSchedules/<int:pk>/', rf_routineSchedules_views.RoutineScheduleDetailView.as_view(), name='routineSchedules.detail'),
+    path('routineSchedules/create/', rf_routineSchedules_views.RoutineScheduleCreateView.as_view(), name='routineSchedules.create'),
+    path('routineSchedules/<int:pk>/update/', rf_routineSchedules_views.RoutineScheduleUpdateView.as_view(), name='routineSchedules.update'),
+    path('routineSchedules/<int:pk>/delete/', rf_routineSchedules_views.RoutineScheduleDeleteView.as_view(), name='routineSchedules.delete'),
+
+    path('transactions/', rf_transactions_views.TransactionsListView.as_view(), name='transactions.list'),
+    path('transactions/paginated/', rf_transactions_views.TransactionsListPaginatedView.as_view(), name='transactions.list.paginated'),
+    path('transactions/<int:pk>/', rf_transactions_views.TransactionDetailView.as_view(), name='transactions.detail'),
+    path('transactions/people/<int:people_id>/', rf_transactions_views.TransactionsByPeopleId.as_view(), name='transactions.list.byPeopleId'),
+    path('transactions/create/', rf_transactions_views.TransactionCreateView.as_view(), name='transactions.create'),
 ]
 
