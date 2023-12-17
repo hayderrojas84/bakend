@@ -14,7 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 from datetime import datetime, timedelta
 
 from gym.models import Users, People
-from gym.serializers import UserSerializer
+from gym.serializers import UserSerializer, PeopleSerializer
 from django.forms.models import model_to_dict
 
 class LoginView(APIView):
@@ -49,11 +49,17 @@ class LoginView(APIView):
         if hashed_password == local_user.password:
             
             local_people = People.objects.get(userId=local_user.id)
+            
+            people = PeopleSerializer(local_people)
+            
             payload = {
                 'username': username,
-                'people': model_to_dict(local_people),
+                'people': people.data,
                 'exp': datetime.utcnow() + timedelta(hours=1)
             }
+            
+            if payload['people']['image']:
+                del payload['people']['image']
 
             secret_key = 'your_secret_key'
             token = jwt.encode(payload, secret_key, algorithm='HS256')

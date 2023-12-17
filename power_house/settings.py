@@ -61,9 +61,11 @@ CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 CORS_ALLOW_HEADERS = [
     'Accept',
     'Accept-Language',
+    'Accept-Encoding',
     'Content-Language',
     'Content-Type',
     'Authorization',
+    'Content-Length'
 ]
 
 ROOT_URLCONF = 'power_house.urls'
@@ -113,7 +115,6 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'power_house',
         'USER': 'root',
-        'PASSWORD': 'root',
         'HOST': '127.0.0.1',
         'PORT': '3306'
     }
